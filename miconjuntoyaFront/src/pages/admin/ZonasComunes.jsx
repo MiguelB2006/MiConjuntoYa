@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Plus,
   Users,
@@ -12,8 +12,9 @@ import {
   Waves,
   Dumbbell,
 } from "lucide-react";
+import ModalNuevaReserva from "../../components/admin/zonas/ModalNuevaReserva.jsx";
+import ModalGestionZona from "../../components/admin/zonas/ModalGestionZona.jsx";
 
-// Datos simulados de las zonas comunes
 const zonasData = [
   {
     id: 1,
@@ -54,9 +55,54 @@ const zonasData = [
 ];
 
 export default function ZonasComunes() {
+  const [showModalNueva, setShowModalNueva] = useState(false);
+  const [zonaSeleccionada, setZonaSeleccionada] = useState(null);
+
+  const [listaReservas, setListaReservas] = useState([
+    {
+      id: "RES-101",
+      zona: "Salón Comunal Principal",
+      residente: "Familia Gómez (Torre 2 - Apto 304)",
+      fecha: "2026-11-15",
+      horario: "06:00 PM - 11:00 PM",
+      estado: "Aprobada",
+    },
+    {
+      id: "RES-102",
+      zona: "Zona BBQ",
+      residente: "Ana Martínez (Torre 1 - Apto 102)",
+      fecha: "Hoy",
+      horario: "12:00 PM - 04:00 PM",
+      estado: "Pendiente",
+    },
+    {
+      id: "RES-103",
+      zona: "Salón Comunal Principal",
+      residente: "Carlos Ruiz (Torre 3 - Apto 501)",
+      fecha: "2026-11-20",
+      horario: "08:00 AM - 01:00 PM",
+      estado: "Pendiente",
+    },
+  ]);
+
+  const reservasDeLaZona = zonaSeleccionada
+    ? listaReservas.filter((r) => r.zona === zonaSeleccionada.nombre)
+    : [];
+
+  const handleGuardarReserva = (nueva) => {
+    setListaReservas([nueva, ...listaReservas]);
+  };
+
+  const actualizarEstadoReserva = (idReserva, nuevoEstado) => {
+    setListaReservas(
+      listaReservas.map((r) =>
+        r.id === idReserva ? { ...r, estado: nuevoEstado } : r,
+      ),
+    );
+  };
+
   return (
-    <div className="flex-1 overflow-y-auto p-6 lg:p-10 scroll-smooth bg-slate-100 h-full">
-      {/* Cabecera */}
+    <div className="flex-1 overflow-y-auto p-6 lg:p-10 scroll-smooth bg-slate-100 h-full relative">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
         <div>
           <h2 className="text-2xl lg:text-3xl font-bold text-slate-800">
@@ -67,20 +113,21 @@ export default function ZonasComunes() {
           </p>
         </div>
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-5 py-2.5 bg-linear-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white rounded-xl font-semibold shadow-lg transition-all">
+          <button
+            onClick={() => setShowModalNueva(true)}
+            className="flex items-center gap-2 px-5 py-2.5 bg-linear-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white rounded-xl font-semibold shadow-lg transition-all"
+          >
             <Plus size={18} /> Nueva Reserva
           </button>
         </div>
       </div>
 
-      {/* Grid de Tarjetas de Zonas */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {zonasData.map((zona) => (
           <div
             key={zona.id}
             className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all flex flex-col"
           >
-            {/* Parte superior de la tarjeta */}
             <div className="p-6 border-b border-slate-100 flex gap-4 items-start">
               <div className={`p-4 rounded-2xl ${zona.colorFondo}`}>
                 {zona.icono}
@@ -89,8 +136,6 @@ export default function ZonasComunes() {
                 <h3 className="font-bold text-lg text-slate-800 leading-tight">
                   {zona.nombre}
                 </h3>
-
-                {/* Badge de Estado */}
                 <div className="mt-2 inline-flex">
                   <span
                     className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md font-bold ${
@@ -114,7 +159,6 @@ export default function ZonasComunes() {
               </div>
             </div>
 
-            {/* Parte central: Información Técnica */}
             <div className="p-6 bg-slate-50/50 space-y-4 flex-1">
               <div className="flex items-center gap-3 text-slate-600">
                 <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center border border-slate-200 text-slate-400">
@@ -127,7 +171,6 @@ export default function ZonasComunes() {
                   <p className="font-semibold text-sm">{zona.aforo}</p>
                 </div>
               </div>
-
               <div className="flex items-center gap-3 text-slate-600">
                 <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center border border-slate-200 text-slate-400">
                   <Clock size={16} />
@@ -141,17 +184,18 @@ export default function ZonasComunes() {
               </div>
             </div>
 
-            {/* Parte inferior: Botón de acción */}
             <div className="p-4 bg-white border-t border-slate-100">
-              <button className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors text-sm flex justify-center items-center gap-2">
-                <CalendarIcon size={16} /> Ver Calendario
+              <button
+                onClick={() => setZonaSeleccionada(zona)}
+                className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors text-sm flex justify-center items-center gap-2"
+              >
+                <CalendarIcon size={16} /> Ver Calendario / Gestión
               </button>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Reglas e información extra */}
       <div className="mt-8 bg-blue-50 border border-blue-100 p-5 rounded-2xl flex items-start gap-4 text-blue-800">
         <AlertCircle className="shrink-0 mt-0.5" />
         <div>
@@ -163,6 +207,20 @@ export default function ZonasComunes() {
           </p>
         </div>
       </div>
+
+      <ModalNuevaReserva
+        isOpen={showModalNueva}
+        onClose={() => setShowModalNueva(false)}
+        zonasData={zonasData}
+        onSave={handleGuardarReserva}
+      />
+
+      <ModalGestionZona
+        zona={zonaSeleccionada}
+        reservas={reservasDeLaZona}
+        onClose={() => setZonaSeleccionada(null)}
+        onActualizarEstado={actualizarEstadoReserva}
+      />
     </div>
   );
 }
